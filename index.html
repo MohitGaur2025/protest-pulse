@@ -29,6 +29,7 @@
         </header>
 
         <main>
+            <!-- Chart and Total Responses -->
             <div class="relative w-full max-w-xs mx-auto mb-6">
                 <canvas id="protestChart"></canvas>
                 <div id="totalResponses" class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
@@ -37,6 +38,7 @@
                 </div>
             </div>
 
+            <!-- Legend/Counters -->
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
                 <div class="bg-gray-700/50 p-4 rounded-lg">
                     <p class="text-lg font-medium text-gray-300">Protesting</p>
@@ -52,6 +54,7 @@
                 </div>
             </div>
 
+            <!-- Status and Refresh Button -->
             <div class="mt-8 text-center">
                  <button id="refreshButton" class="bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-cyan-400 disabled:bg-gray-600 disabled:cursor-not-allowed">
                     Refresh Now
@@ -64,7 +67,8 @@
     <script>
         const GOOGLE_SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ6f3tvPm1QL0gmol7GgVcWX9Ks7tY5MOmRGFfoZRIt_vxue6A4-azF-3OVW76dr1B-xaELHYr-Iw-M/pub?gid=732343905&single=true&output=csv';
         const PROTEST_RESPONSE_COLUMN_INDEX = 1;
-        const REFRESH_INTERVAL_SECONDS = 30;
+        // Set refresh interval to 60 seconds (1 minute)
+        const REFRESH_INTERVAL_SECONDS = 60;
 
         const yesCountEl = document.getElementById('yesCount');
         const noCountEl = document.getElementById('noCount');
@@ -120,7 +124,8 @@
                 responses.forEach(row => {
                     if (row.length > PROTEST_RESPONSE_COLUMN_INDEX) {
                         const answer = row[PROTEST_RESPONSE_COLUMN_INDEX]?.trim();
-                        if (answer === "Yes, I am protesting") yes++;
+                        // --- FIX: Updated the text to match your sheet's data ---
+                        if (answer === "Yes, I'm in") yes++;
                         else if (answer === "No, I'm out") no++;
                         else if (answer === "I am undecided") maybe++;
                     }
@@ -165,37 +170,21 @@
             statusTextEl.classList.remove('text-red-400');
         }
 
-        // A more robust CSV parser
+        // A robust CSV parser to handle quotes and newlines
         function parseCSV(str) {
             const arr = [];
             let quote = false;  // 'true' means we're inside a quoted field
 
-            // Iterate over each character, keep track of current row and column (of the returned array)
             for (let row = 0, col = 0, c = 0; c < str.length; c++) {
-                let cc = str[c], nc = str[c+1];        // Current character, next character
-                arr[row] = arr[row] || [];             // Create a new row if necessary
-                arr[row][col] = arr[row][col] || '';   // Create a new column (start with empty string) if necessary
+                let cc = str[c], nc = str[c+1];
+                arr[row] = arr[row] || [];
+                arr[row][col] = arr[row][col] || '';
 
-                // If the current character is a quotation mark, and we're inside a
-                // quoted field, and the next character is also a quotation mark,
-                // add a quotation mark to the current column and skip the next character
                 if (cc == '"' && quote && nc == '"') { arr[row][col] += cc; ++c; continue; }
-
-                // If it's a quotation mark, toggle being in a quoted field
                 if (cc == '"') { quote = !quote; continue; }
-
-                // If it's a comma and we're not in a quoted field, move on to the next column
                 if (cc == ',' && !quote) { ++col; continue; }
-
-                // If it's a newline (CRLF) and we're not in a quoted field, skip the next character
-                // and move on to the next row and move to column 0 of that new row
                 if (cc == '\r' && nc == '\n' && !quote) { ++row; col = 0; ++c; continue; }
-
-                // If it's a newline (LF or CR) and we're not in a quoted field,
-                // move on to the next row and move to column 0 of that new row
                 if ((cc == '\n' || cc == '\r') && !quote) { ++row; col = 0; continue; }
-
-                // Otherwise, append the current character to the current column
                 arr[row][col] += cc;
             }
             return arr;
@@ -213,3 +202,4 @@
     </script>
 </body>
 </html>
+
