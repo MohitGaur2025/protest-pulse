@@ -124,10 +124,10 @@
                 responses.forEach(row => {
                     if (row.length > PROTEST_RESPONSE_COLUMN_INDEX) {
                         const answer = row[PROTEST_RESPONSE_COLUMN_INDEX]?.trim();
-                        // --- FIX: Updated the text to match your sheet's data ---
                         if (answer === "Yes, I'm in") yes++;
                         else if (answer === "No, I'm out") no++;
-                        else if (answer === "I am undecided") maybe++;
+                        // --- FINAL FIX: Changed "I am undecided" to "Undecided" ---
+                        else if (answer === "Undecided") maybe++;
                     }
                 });
 
