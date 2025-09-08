@@ -29,7 +29,6 @@
         </header>
 
         <main>
-            <!-- Chart and Total Responses -->
             <div class="relative w-full max-w-xs mx-auto mb-6">
                 <canvas id="protestChart"></canvas>
                 <div id="totalResponses" class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
@@ -38,7 +37,6 @@
                 </div>
             </div>
 
-            <!-- Legend/Counters -->
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
                 <div class="bg-gray-700/50 p-4 rounded-lg">
                     <p class="text-lg font-medium text-gray-300">Protesting</p>
@@ -54,7 +52,6 @@
                 </div>
             </div>
 
-            <!-- Status and Refresh Button -->
             <div class="mt-8 text-center">
                  <button id="refreshButton" class="bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-cyan-400 disabled:bg-gray-600 disabled:cursor-not-allowed">
                     Refresh Now
@@ -170,9 +167,32 @@
 
         // A robust CSV parser to handle potential commas within quoted fields
         function parseCSV(text) {
-            const rows = text.trim().split('\n');
-            return rows.map(row => row.split(',').map(field => field.trim()));
+            let rows = text.trim().split('\n');
+            return rows.map(row => {
+                let fields = [];
+                let start = 0;
+                let inQuotes = false;
+                for (let i = 0; i < row.length; i++) {
+                    if (row[i] === '"') {
+                        inQuotes = !inQuotes;
+                    } else if (row[i] === ',' && !inQuotes) {
+                        let field = row.substring(start, i);
+                        fields.push(field);
+                        start = i + 1;
+                    }
+                }
+                fields.push(row.substring(start));
+
+                return fields.map(field => {
+                    field = field.trim();
+                    if (field.startsWith('"') && field.endsWith('"')) {
+                        return field.substring(1, field.length - 1);
+                    }
+                    return field;
+                });
+            });
         }
+
 
         // --- Event Listeners and Initial Load ---
         refreshButton.addEventListener('click', fetchDataAndUpdate);
